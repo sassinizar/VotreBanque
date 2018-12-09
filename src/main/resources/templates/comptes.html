@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="templte1">
+
+<head>
+<link rel="stylesheet"
+	th:href="@{/webjars/bootstrap/4.1.3/css/bootstrap.min.css}" />
+<meta charset="utf-8" />
+<title>Ma Banque</title>
+</head>
+<body>
+
+	<div class="container" layout:fragment="content">
+		<p></p>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="card">
+
+					<div class="card-header">Consultation d'un compte</div>
+					<p></p>
+					<form class="form-inline" th:action="@{/consulterCompte}"
+						method="get">
+						<input type="text" class="form-control mb-2 mr-sm-2"  placeholder="Code de compte"
+							name="codeCpte" th:value="${codeCompte}" />
+						<button type="submit" class="btn btn-primary mb-2">Consulter</button>
+					</form>
+					<div class="text-danger" th:if="${exception}"
+						th:text="${exception.message}"></div>
+				</div>
+				<p></p>
+				<div class="card" th:if="${compte}">
+					<div class="card-header">Informations sur le compte</div>
+					<ul class="list-group list-group-flush">
+						<div>
+							<li class="list-group-item"><label>Client:</label><label
+								th:text="${compte.client.nom}"></label></li>
+						</div>
+						<div>
+							<li class="list-group-item"><label>Code:</label><label
+								th:text="${compte.codeCompte}"></label></li>
+						</div>
+
+						<div>
+							<li class="list-group-item"><label>Solde:</label><label
+								th:text="${compte.solde}"></label></li>
+						</div>
+
+						<div>
+							<li class="list-group-item"><label>Date de création:</label><label
+								th:text="${compte.dateCreation}"></label></li>
+						</div>
+
+						<div>
+							<li class="list-group-item"><label>Type: </label><label
+								th:text="${compte.class.simpleName}"></label></li>
+						</div>
+
+						<div th:if="${compte.class.simpleName=='CompteCourant'}">
+							<li class="list-group-item"><label>Découvert: </label><label
+								th:text="${compte.decouvert}"></label></li>
+						</div>
+
+						<div th:if="${compte.class.simpleName=='CompteEpargne'}">
+							<li class="list-group-item"><label>Taux: </label><label
+								th:text="${compte.taux}"></label></li>
+						</div>
+					</ul>
+
+
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card" th:if="${compte}">
+					<div class="card-header">Opération sur le compte</div>
+					<form th:action="@{/saveOperation}" method="POST">
+						<div>
+							<div class="col-sm-10">
+								<input type="hidden" class="form-control" name="codeCpte" th:value="${codeCompte}">
+							</div>
+							<!-- <label>Compte: </label><label th:text="${codeCompte}"></label> -->
+						</div>
+						<div>
+							<input type="radio" name="typeOperation" value="VERS" onchange="document.getElementById('forVirement').style.display='none'">
+							<label>Versement</label> 
+							<input type="radio" name="typeOperation" value="RETR" onchange="document.getElementById('forVirement').style.display='none'">
+							<label>Retrait</label> 
+							<input type="radio" name="typeOperation" value="VIRE" onchange="document.getElementById('forVirement').style.display='block'">
+							<label>Virement</label>
+						</div>
+							<div class="form-group row" id="forVirement"  style="display: none">
+							  <label  class="col-sm-2 col-form-label">Vers</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" name="codeCompte2">
+								</div>
+							</div>
+							<div class="form-group row">
+								<label  class="col-sm-2 col-form-label">Montant</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" name="montant" >
+								</div>
+							</div>
+							<div class="text-danger" th:text="${#httpServletRequest.getParameter('error')}"></div>
+							<div class="col-sm-10">
+								<button type="submit" class="btn btn-primary">Valider</button>
+							</div>
+					</form>		
+					
+				</div>
+				<p></p>
+				<div class="card" th:if="${compte}">
+					<div class="card-header">Liste des opérations</div>
+					<table class="table table-striped">
+						<tr>
+							<th>Num</th>
+							<th>Type</th>
+							<th>Date</th>
+							<th>Montant</th>
+						</tr>
+						<tr th:each="o:${listeOperation}">
+							<td th:text="${o.numero}"></td>
+							<td th:text="${o.class.simpleName}"></td>
+							<td th:text="${o.dateOperation}"></td>
+							<td th:text="${o.montant}"></td>
+						</tr>
+					</table>
+					<nav aria-label="Page navigation example">
+						<ul class="pagination">
+							<li th:class="${pageCourante}==${status.index}?'page-item active':''" class="page-item" 
+							th:each="pa,status:${pages}">
+							<a class="page-link"
+								th:href="@{/consulterCompte(codeCpte=${codeCompte},page=${status.index})}"
+								th:text="${status.index}"></a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>
